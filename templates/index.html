@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Code Snippet Organizer</title>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai-sublime.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #00d4ff;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            max-width: 600px;
+            height: 150px;
+            background: #2a2a2a;
+            color: #ffffff;
+            border: 2px solid #00d4ff;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 1em;
+            resize: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #ff00ff;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+        }
+
+        input[type="submit"] {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #00d4ff;
+            color: #1a1a1a;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        input[type="submit"]:hover {
+            background: #ff00ff;
+            transform: scale(1.05);
+        }
+
+        .search-bar {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px;
+            background: #2a2a2a;
+            color: #ffffff;
+            border: 2px solid #00d4ff;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #ff00ff;
+        }
+
+        h2 {
+            font-size: 1.8em;
+            color: #ffffff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .snippet {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .snippet:hover {
+            transform: translateY(-5px);
+        }
+
+        pre {
+            background: #1f1f1f;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+
+        p {
+            color: #bbbbbb;
+            margin: 5px 0;
+        }
+
+        p strong {
+            color: #ffffff;
+        }
+
+        .snippet-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button, .delete-btn, .edit-btn {
+            background: #ff4444;
+            color: #ffffff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .edit-btn {
+            background: #00d4ff;
+        }
+
+        button:hover, .delete-btn:hover, .edit-btn:hover {
+            background: #ff6666;
+            transform: scale(1.05);
+        }
+
+        .edit-btn:hover {
+            background: #ff00ff;
+        }
+
+        .tag-form {
+            display: inline;
+        }
+
+        input[type="text"].tag-input {
+            width: 200px;
+            padding: 5px;
+            margin-right: 5px;
+        }
+
+        .clear-btn {
+            text-align: center;
+            margin: 20px auto;
+        }
+
+        .no-snippets {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>Code Snippet Organizer</h1>
+    <form method="POST">
+        <textarea name="snippet" placeholder="Paste your code here..."></textarea>
+        <input type="submit" value="Add Snippet">
+    </form>
+    <div class="search-bar">
+        <input type="text" id="search" placeholder="Search snippets or tags..." value="{{ search_query }}">
+    </div>
+    <h2>Your Snippets</h2>
+    {% if snippets %}
+        <div class="clear-btn">
+            <a href="{{ url_for('clear') }}"><button>Clear All</button></a>
+        </div>
+        {% for i in range(snippets|length) %}
+            <div class="snippet">
+                <pre><code class="python">{{ snippets[i].code }}</code></pre>
+                <p><strong>Tags:</strong> {{ snippets[i].tags | join(', ') }}</p>
+                <div class="snippet-actions">
+                    <form class="tag-form" method="POST" action="{{ url_for('edit_tags', index=i) }}">
+                        <input type="text" name="tags" class="tag-input" value="{{ snippets[i].tags | join(', ') }}" placeholder="Edit tags...">
+                        <button type="submit" class="edit-btn">Save Tags</button>
+                    </form>
+                    <a href="{{ url_for('delete', index=i) }}"><button class="delete-btn">Delete</button></a>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="no-snippets">No snippets yet—add one above!</p>
+    {% endif %}
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>
+        // Highlight code
+        hljs.highlightAll();
+
+        // Live search
+        const searchInput = document.getElementById('search');
+        searchInput.addEventListener('input', function() {
+            const query = this.value;
+            window.location.href = '/?search=' + encodeURIComponent(query);
+        });
+    </script>
+</body>
+</html>
